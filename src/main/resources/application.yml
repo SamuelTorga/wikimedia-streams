@@ -1,0 +1,27 @@
+micronaut:
+  application:
+    name: wikimedia-streams
+  http:
+    client:
+      read-idle-timeout: 10m
+kafka:
+  bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  producers:
+    recent-changes-producer:
+      retries: 5
+      compression.type: lz4
+  consumers:
+    recent-changes-consumer:
+      partition.assignment.strategy: org.apache.kafka.clients.consumer.CooperativeStickyAssignor
+
+wikimedia:
+  stream:
+    url: https://stream.wikimedia.org/v2/stream
+    path:
+      recent-changes: /recentchange
+
+mongodb:
+  uri: mongodb://${MONGO_DB_USER}:${MONGO_DB_PASS}@${MONGO_DB_HOST}/wikimedia
+  connectionPool:
+    maxSize: 20
+    min-size: 5

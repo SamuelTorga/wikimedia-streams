@@ -1,0 +1,9 @@
+logger:
+  levels:
+    br.com.samueltorga: TRACE
+
+KAFKA_BOOTSTRAP_SERVERS: localhost:8097,localhost:8098,localhost:8099
+
+MONGO_DB_HOST: localhost:27017
+MONGO_DB_USER: wikimedia_app_user
+MONGO_DB_PASS: password

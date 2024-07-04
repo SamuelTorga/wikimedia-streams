@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: br.com.samueltorga
+testFramework: junit
+sourceLanguage: java
+buildTool: maven
+features: [ app-name, data, data-mongodb, http-client, java, java-application, jul-to-slf4j, junit, kafka, logback, maven, maven-enforcer-plugin, micronaut-aot, micronaut-http-validation, mongo-sync, netty-server, properties, readme, serialization-jackson, shade, static-resources, test-resources ]
