@@ -4,6 +4,18 @@ micronaut:
   http:
     client:
       read-idle-timeout: 10m
+  opensearch:
+    rest-client:
+      enabled: true
+      http-hosts: ${OPENSEARCH_HOST}
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
+    opensearch:
+      enabled: true
+
 kafka:
   bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS}
   producers:
@@ -16,6 +28,7 @@ kafka:
 
 wikimedia:
   stream:
+    enabled: true
     url: https://stream.wikimedia.org/v2/stream
     path:
       recent-changes: /recentchange

@@ -15,7 +15,9 @@ services:
       retries: 5
       start_period: 30s
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_started
+        restart: true
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -34,7 +36,9 @@ services:
       retries: 5
       start_period: 30s
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_started
+        restart: true
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -53,7 +57,9 @@ services:
       retries: 5
       start_period: 30s
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_started
+        restart: true
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -108,6 +114,83 @@ services:
         condition: service_healthy
     networks:
       - mongo-compose-network
+  opensearch1: # This is also the hostname of the container within the Docker network (i.e. https://opensearch-node1/)
+    image: opensearchproject/opensearch:latest # Specifying the latest available image - modify if you want a specific version
+    environment:
+      - cluster.name=opensearch-cluster # Name the cluster
+      - node.name=opensearch1 # Name the node that will run in this container
+      - discovery.seed_hosts=opensearch1,opensearch2 # Nodes to look for when discovering the cluster
+      - plugins.security.disabled=true # Disable the OpenSearch Security plugin
+      #- compatibility.override_main_response_version=true # Enable compatibility mode for OpenSearch Dashboards
+      - cluster.initial_master_nodes=opensearch1,opensearch2 # Nodes eligible to serve as cluster manager
+      - bootstrap.memory_lock=true # Disable JVM heap memory swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=SamuelTeste2024#    # Sets the demo admin user password when using demo configuration, required for OpenSearch 2.12 and later
+    ulimits:
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit)
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+        hard: 65536
+    volumes:
+      - opensearch1-data:/usr/share/opensearch/data # Creates volume called opensearch-data1 and mounts it to the container
+    ports:
+      - 9200:9200 # REST API
+      - 9600:9600 # Performance Analyzer
+    networks:
+      - opensearch-net # All of the containers will join the same Docker bridge network
+  opensearch2:
+    image: opensearchproject/opensearch:latest # This should be the same image used for opensearch-node1 to avoid issues
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch2
+      - discovery.seed_hosts=opensearch1,opensearch2
+      - cluster.initial_master_nodes=opensearch1,opensearch2
+      #- compatibility.override_main_response_version=true # Enable compatibility mode for OpenSearch Dashboards
+      - plugins.security.disabled=true # Disable the OpenSearch Security plugin
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=SamuelTeste2024#
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - opensearch2-data:/usr/share/opensearch/data
+    networks:
+      - opensearch-net
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest # Make sure the version of opensearch-dashboards matches the version of opensearch installed on other nodes
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch1:9200","http://opensearch2:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true # Disable the OpenSearch Security plugin
+    depends_on:
+      - opensearch1
+      - opensearch2
+    networks:
+      - opensearch-net
+  logstash-with-plugin:
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.2
+    depends_on:
+      - opensearch1
+      - opensearch2
+    networks:
+      - opensearch-net
+
+volumes:
+  opensearch1-data:
+  opensearch2-data:
+
 networks:
   mongo-compose-network:
+    driver: bridge
+  opensearch-net:
     driver: bridge

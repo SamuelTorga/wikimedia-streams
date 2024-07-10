@@ -40,11 +40,17 @@ public class WikimediaStreamService implements ApplicationEventListener<Applicat
     @Value("${wikimedia.stream.url}")
     private String wikimediaStreamUrl;
 
+    @Value("${wikimedia.stream.enabled}")
+    private boolean wikimediaStreamEnabled;
+
     @Value("${wikimedia.stream.path.recent-changes}")
     private String recentChangesPath;
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
+        if (!wikimediaStreamEnabled) {
+            return;
+        }
         if (event instanceof ServiceReadyEvent) {
             log.info("Starting Wikimedia stream");
 
