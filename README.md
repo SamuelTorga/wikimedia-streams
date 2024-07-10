@@ -17,3 +17,4 @@ database after consuming the messages using a Kafka Consumer.
     - OkHttp3
 - Docker
     - Docker Compose
+- OpenSearch
