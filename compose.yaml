@@ -1,85 +1,111 @@
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.2.1
+  kafka-1:
+    image: "bitnami/kafka:3.4.0"
+    hostname: kafka-1
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-  kafka1:
-    image: confluentinc/cp-kafka:7.2.1
-    restart: always
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=kraft:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9094
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - BITNAMI_DEBUG=yes
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_KRAFT_CLUSTER_ID=OTMwNzFhYTY1ODNiNGE5OT
+      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
+      - KAFKA_CFG_ADVERTISED_LISTENERS=kraft://:9093,INTERNAL://kafka-1:9092
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9094,2@kafka-2:9094,3@kafka-3:9094
+      - KAFKA_CFG_LISTENERS=kraft://:9093,CONTROLLER://kafka-1:9094,INTERNAL://:9092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
     ports:
-      - "8097:8097"
-    healthcheck:
-      test: [ "CMD", "/bin/kafka-topics", "--bootstrap-server", "localhost:8097", "--list", "||", "exit 1" ]
-      interval: 5s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    depends_on:
-      zookeeper:
-        condition: service_started
-        restart: true
+      - "9101:9092"
+      - "9102:9093"
+      - "9103:9094"
+    networks:
+      kafka-net:
+        aliases:
+          - kafka-1
+  kafka-2:
+    image: "bitnami/kafka:3.4.0"
+    hostname: kafka-2
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:8097,INTERNAL://kafka1:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-  kafka2:
-    image: confluentinc/cp-kafka:7.2.1
-    restart: always
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=kraft:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_BROKER_ID=2
+      - KAFKA_CFG_NODE_ID=2
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=2@kafka-2:9094
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - BITNAMI_DEBUG=yes
+      - KAFKA_KRAFT_CLUSTER_ID=OTMwNzFhYTY1ODNiNGE5OT
+      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
+      - KAFKA_CFG_ADVERTISED_LISTENERS=kraft://:9093,INTERNAL://kafka-2:9092
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9094,2@kafka-2:9094,3@kafka-3:9094
+      - KAFKA_CFG_LISTENERS=kraft://:9093,CONTROLLER://kafka-2:9094,INTERNAL://:9092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
     ports:
-      - "8098:8098"
-    healthcheck:
-      test: [ "CMD", "/bin/kafka-topics", "--bootstrap-server", "localhost:8098", "--list", "||", "exit 1" ]
-      interval: 5s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    depends_on:
-      zookeeper:
-        condition: service_started
-        restart: true
+      - "9095:9092"
+      - "9096:9093"
+      - "9097:9094"
+    networks:
+      kafka-net:
+        aliases:
+          - kafka-2
+  kafka-3:
+    image: "bitnami/kafka:3.4.0"
+    hostname: kafka-3
     environment:
-      KAFKA_BROKER_ID: 2
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:8098,INTERNAL://kafka2:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-  kafka3:
-    image: confluentinc/cp-kafka:7.2.1
-    restart: always
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=kraft:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_BROKER_ID=3
+      - KAFKA_CFG_NODE_ID=3
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=3@kafka-3:9094
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - BITNAMI_DEBUG=yes
+      - KAFKA_KRAFT_CLUSTER_ID=OTMwNzFhYTY1ODNiNGE5OT
+      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=3
+      - KAFKA_CFG_ADVERTISED_LISTENERS=kraft://:9093,INTERNAL://kafka-3:9092
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9094,2@kafka-2:9094,3@kafka-3:9094
+      - KAFKA_CFG_LISTENERS=kraft://:9093,CONTROLLER://kafka-3:9094,INTERNAL://:9092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
+
     ports:
-      - "8099:8099"
-    healthcheck:
-      test: [ "CMD", "/bin/kafka-topics", "--bootstrap-server", "localhost:8099", "--list", "||", "exit 1" ]
-      interval: 5s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    depends_on:
-      zookeeper:
-        condition: service_started
-        restart: true
-    environment:
-      KAFKA_BROKER_ID: 3
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:8099,INTERNAL://kafka3:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      - "9098:9092"
+      - "9099:9093"
+      - "9100:9094"
+    networks:
+      kafka-net:
+        aliases:
+          - kafka-3
+
   kafdrop:
     image: obsidiandynamics/kafdrop:4.0.2-SNAPSHOT
     restart: "no"
     ports:
       - "9000:9000"
     environment:
-      KAFKA_BROKERCONNECT: "kafka1:9092,kafka2:9092,kafka3:9092"
+      KAFKA_BROKERCONNECT: "kafka-1:9092,kafka-2:9092,kafka-3:9092"
     depends_on:
-      kafka1:
-        condition: service_healthy
-      kafka2:
-        condition: service_healthy
-      kafka3:
-        condition: service_healthy
+      kafka-1:
+        condition: service_started
+      kafka-2:
+        condition: service_started
+      kafka-3:
+        condition: service_started
+    networks:
+      kafka-net:
+        aliases:
+          - kafdrop
   mongo:
     image: 'mongo:7.0.12'
     restart: always
@@ -188,9 +214,15 @@ services:
 volumes:
   opensearch1-data:
   opensearch2-data:
+  kafka_data:
+    driver: local
+  kafka_data_c:
+    driver: local
 
 networks:
   mongo-compose-network:
     driver: bridge
   opensearch-net:
     driver: bridge
+  kafka-net:
+    driver: host
